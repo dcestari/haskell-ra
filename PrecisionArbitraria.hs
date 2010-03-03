@@ -8,11 +8,19 @@ data RealArbitrario
 main :: IO ()
 
 main =
-  let a = NoNeg [0,1] [0] 10
-      b = NoNeg [1,1] [0] 10
-  in putStrLn ((showRA a) ++ " - " ++ (showRA b) ++ " = " ++ (showRA (restaRA a b)))
+  let a = Neg [0,1] [0] 10
+      b = Neg [1,1] [0] 10
+  in putStrLn ((showRA a) ++ " + " ++ (showRA b) ++ " = " ++ (showRA (sumaRA a b)))
 
 sumaRA :: RealArbitrario -> RealArbitrario -> RealArbitrario
+sumaRA x@(Neg _ _ _) y@(NoNeg _ _ _) = restaRA y x
+sumaRA x@(NoNeg _ _ _) y@(Neg _ _ _) = restaRA x y
+sumaRA x@(Neg xs ys b1) y@(Neg ws zs b2)
+  | b1 == b2 =
+    let (a, b, d) = toList x y
+        s = (addWithCarry a b b1 0)
+    in (fromList s d b1 True)
+  | otherwise = error "sólo se pueden sumar números con la misma base"
 sumaRA x@(NoNeg xs ys b1) y@(NoNeg ws zs b2)
   | b1 == b2 =
     let (a, b, d) = toList x y
@@ -26,6 +34,9 @@ fromList list n b neg
   | neg = Neg (drop n list) (reverse (take n list)) b
 
 toList :: RealArbitrario -> RealArbitrario -> ([Int], [Int], Int)
+toList x@(NoNeg xs ys b1) y@(Neg ws zs b2) = toList x (NoNeg ws zs b2)
+toList x@(Neg xs ys b1) y@(NoNeg ws zs b2) = toList (NoNeg xs ys b2) y
+toList x@(Neg xs ys b1) y@(Neg ws zs b2) = toList (NoNeg xs ys b2) (NoNeg ws zs b2)
 toList x@(NoNeg xs ys b1) y@(NoNeg ws zs b2) =
     let (e1, e2, e) = normalize xs ws
         (d1, d2, d) = normalize ys zs
@@ -80,7 +91,6 @@ showRA (num) =
   let entera = showParteEntera num
       decimal = showDecimales num
   in if decimal == "" then entera else entera ++ "." ++ decimal
-
 
 showParteEntera :: RealArbitrario -> String
 showParteEntera (NoNeg (x:xs) ys b) = (showParteEntera (NoNeg (trim xs) ys b)) ++ (show x)
