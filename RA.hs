@@ -60,3 +60,17 @@ divRA x@(NoNeg xs ys b1) y@(NoNeg ws zs b2) d
         (s, decimales) = bruteForceDiv a b b1 d 0
     in fromList s decimales b1 False
   | otherwise = error "sólo se pueden dividir números con la misma base"
+
+piRA :: Int -> Int -> RealArbitrario
+piRA n d
+  | n < 0 = NoNeg [] [] 10
+  | otherwise = 
+    sumaRA (piRA (n - 1) d) (multRA (divRA (NoNeg [1] [] 10) (powRA (NoNeg [6,1] [] 10) n) d)
+    (restaRA (restaRA (restaRA (term 4 1) (term 2 4)) (term 1 5)) (term 1 6)))
+  where term = \a b -> (divRA (NoNeg [a] [] 10) (sumaRA (powRA (NoNeg [8] [] 10) n) (NoNeg [b] [] 10)) d)
+
+powRA :: RealArbitrario -> Int -> RealArbitrario
+powRA num times = (pow num) !! times
+
+pow num@(NoNeg _ _ b) = NoNeg [1] [] b : num : [ (multRA a num) | a <- (tail (pow num))]
+pow num@(Neg _ _ b) = NoNeg [1] [] b : num : [ (multRA a num) | a <- (tail (pow num))]
