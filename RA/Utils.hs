@@ -19,15 +19,6 @@ toList x@(NoNeg xs ys b1) y@(NoNeg ws zs b2) =
         b = (reverse d2) ++ e2
     in (a, b, d)
 
-showRA :: RealArbitrario -> String
-showRA num =
-  let r = trimRA num
-      entera = showParteEntera r
-      decimal = showDecimales r
-      e_str = if entera == "" then (if isNegative r then "-" else "") ++ "0" else entera
-      d_str = if decimal == "" then "" else "." ++ decimal
-  in e_str ++ d_str
-
 showParteEntera :: RealArbitrario -> String
 showParteEntera (NoNeg (x:xs) ys b) = (showParteEntera (NoNeg xs ys b)) ++ (show x)
 showParteEntera (NoNeg [] ys b) = []

@@ -74,3 +74,32 @@ powRA num times = (pow num) !! times
 
 pow num@(NoNeg _ _ b) = NoNeg [1] [] b : num : [ (multRA a num) | a <- (tail (pow num))]
 pow num@(Neg _ _ b) = NoNeg [1] [] b : num : [ (multRA a num) | a <- (tail (pow num))]
+
+base10RA :: RealArbitrario -> RealArbitrario
+base10RA num@(Neg _ _ 10) = num
+base10RA num@(NoNeg _ _ 10) = num
+base10RA num@(Neg xs ys b) =
+  let (NoNeg ws zs _) = base10RA (NoNeg xs ys b)
+  in Neg ws zs 10
+base10RA (NoNeg xs ys b) =
+  let entera = changeBaseTo10RA (map (\y -> NoNeg [y] [] 10) xs) (NoNeg (carry [b] 10) [] 10)
+      decimal = changeBaseTo10RA ([NoNeg [] [] 10] ++ (map (\y -> NoNeg [y] [] 10) ys)) (divRA (NoNeg [1] [] 10) (NoNeg (carry [b] 10) [] 10) 10)
+  in sumaRA entera decimal
+
+changeBaseTo10RA :: [RealArbitrario] -> RealArbitrario -> RealArbitrario
+changeBaseTo10RA [] _ = NoNeg [] [] 10
+changeBaseTo10RA (x:xs) b =
+  let digits = map (\y -> multRA b y) xs
+      rest = changeBaseTo10RA digits b
+  in sumaRA x rest
+
+showRA :: RealArbitrario -> String
+showRA num@(Neg xs ys 10) = "-" ++ (showRA (NoNeg xs ys 10))
+showRA num@(NoNeg _ _ 10) =
+  let r = trimRA num
+      entera = showParteEntera r
+      decimal = showDecimales r
+      e_str = if entera == "" then (if isNegative r then "-" else "") ++ "0" else entera
+      d_str = if decimal == "" then "" else "." ++ decimal
+  in e_str ++ d_str
+showRA num = showRA (base10RA num)
