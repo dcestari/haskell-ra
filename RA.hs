@@ -45,3 +45,18 @@ multRA x@(NoNeg xs ys b1) y@(NoNeg ws zs b2)
         s = multWithCarry a b b1
     in fromList s (d * 2) b1 False
   | otherwise = error "sólo se pueden multiplicar números con la misma base"
+
+divRA :: RealArbitrario -> RealArbitrario -> Int -> RealArbitrario
+divRA x@(Neg xs ys b1) y@(Neg ws zs b2) d = divRA (NoNeg xs ys b1) (NoNeg ws zs b2) d
+divRA x@(Neg xs ys b) y@(NoNeg _ _ _) d =
+  let (NoNeg ws zs _) = divRA (NoNeg xs ys b) y d
+  in Neg ws zs b
+divRA x@(NoNeg _ _ _) y@(Neg ws zs b) d =
+  let (NoNeg xs ys _) = divRA x (NoNeg ws zs b) d
+  in Neg xs ys b
+divRA x@(NoNeg xs ys b1) y@(NoNeg ws zs b2) d
+  | b1 == b2 =
+    let (a, b, _) = toList x y
+        (s, decimales) = bruteForceDiv a b b1 d 0
+    in fromList s decimales b1 False
+  | otherwise = error "sólo se pueden dividir números con la misma base"

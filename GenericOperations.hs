@@ -39,6 +39,28 @@ multWithCarry xs (y:ys) b =
   let (w, z, d) = normalize (vectorMultWithCarry y xs b 0) (0 : multWithCarry xs ys b)
   in addWithCarry w z b 0
 
+bruteForceDiv :: [Int] -> [Int] -> Int -> Int -> Int -> ([Int], Int)
+bruteForceDiv xs [] b d ds = error "infinite"
+bruteForceDiv [] ys b d ds = ([0], ds)
+bruteForceDiv xs ys b d ds
+  | isZero xs = ([0], ds)
+  | greater xs ys =
+    let left = subWithBorrow xs ys b 0
+        (times, decimales) = bruteForceDiv left ys b d ds
+        (w, z, _) = normalize times ((take (decimales - ds) (repeat 0)) ++ [1])
+    in (addWithCarry w z b 0, decimales)
+  | greater ys xs =
+    if d > 0 then
+      let (w, z, _) = normalize (0:xs) ys
+      in bruteForceDiv w z b (d - 1) (ds + 1)
+    else
+      ([0], ds)
+  | otherwise = ([1], ds)
+
+isZero :: [Int] -> Bool
+isZero [] = True
+isZero (x:xs) = and [x == 0, isZero xs]
+
 vectorMultWithCarry :: Int -> [Int] -> Int -> Int -> [Int]
 vectorMultWithCarry _ [] _ k
   | k > 0 = [k]
@@ -49,7 +71,13 @@ vectorMultWithCarry c (x:xs) b k =
 
 greater :: [Int] -> [Int] -> Bool
 greater [] [] = True
-greater (x:xs) (y:ys)
-  | x == y = greater xs ys
+greater a b
+  | x == y = greater (reverse xs) (reverse ys)
   | x > y  = True
   | x < y  = False
+  where (x:xs) = reverse a
+        (y:ys) = reverse b
+
+carry :: [Int] -> Int -> [Int]
+carry [] b = []
+carry (x:xs) b = [x `mod` b] ++ (carry xs b)
