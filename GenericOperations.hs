@@ -2,15 +2,14 @@ module GenericOperations where
 
 trim :: [Int] -> [Int]
 trim [] = []
-trim (x:xs) = if x == 0 then trim xs else (x:xs)
-
-rtrim :: [Int] -> [Int]
-rtrim xs = if trimmed == [0] then [] else trimmed
-  where trimmed = reverse (trim (reverse xs))
+trim list = if x == 0 then trim (reverse xs) else list
+  where (x:xs) = reverse list
 
 normalize :: [Int] -> [Int] -> ([Int], [Int], Int)
-normalize xs ys = (xs ++ (zpad n), ys ++ (zpad m), max n m)
-  where n = length xs
+normalize a b = (xs ++ (zpad n), ys ++ (zpad m), max n m)
+  where xs = trim a
+        ys = trim b
+        n = length xs
         m = length ys
         z = repeat 0
         zpad = \k -> (take ((max n m) - k) z)
@@ -52,7 +51,9 @@ bruteForceDiv xs ys b d ds
   | greater ys xs =
     if d > 0 then
       let (w, z, _) = normalize (0:xs) ys
-      in bruteForceDiv w z b (d - 1) (ds + 1)
+          (times, decimales) = bruteForceDiv w z b (d - 1) (ds + 1)
+          s = if ds > 0 then [0] else []
+      in ((times ++ s), decimales)
     else
       ([0], ds)
   | otherwise = ([1], ds)
