@@ -32,3 +32,16 @@ restaRA x@(NoNeg xs ys b1) y@(NoNeg ws zs b2)
     in (fromList s d b1 neg)
   | otherwise = error "sólo se pueden restar números con la misma base"
 
+multRA :: RealArbitrario -> RealArbitrario -> RealArbitrario
+multRA x@(Neg xs ys b1) y@(Neg ws zs b2) = multRA (NoNeg xs ys b1) (NoNeg ws zs b2)
+multRA x@(Neg _ _ _) y@(NoNeg _ _ _) = multRA y x
+multRA x@(NoNeg _ _ _) y@(Neg ws zs b) =
+  let (NoNeg xs ys _) = multRA x (NoNeg ws zs b)
+  in Neg xs ys b
+multRA x@(NoNeg xs ys b1) y@(NoNeg ws zs b2)
+  | b1 == b2 =
+    let (a, b, _) = toList x y
+        d = max (length ys) (length zs)
+        s = multWithCarry a b b1
+    in fromList s (d * 2) b1 False
+  | otherwise = error "sólo se pueden multiplicar números con la misma base"

@@ -33,6 +33,20 @@ subWithBorrow (x:xs) (y:ys) b k
   where d = x - y - k
         r = \borrow -> ([d `mod` b] ++ (subWithBorrow xs ys b borrow))
 
+multWithCarry :: [Int] -> [Int] -> Int -> [Int]
+multWithCarry _ [] b = []
+multWithCarry xs (y:ys) b =
+  let (w, z, d) = normalize (vectorMultWithCarry y xs b 0) (0 : multWithCarry xs ys b)
+  in addWithCarry w z b 0
+
+vectorMultWithCarry :: Int -> [Int] -> Int -> Int -> [Int]
+vectorMultWithCarry _ [] _ k
+  | k > 0 = [k]
+  | otherwise = []
+vectorMultWithCarry c (x:xs) b k =
+  let d = c * x + k
+  in [d `mod` b] ++ (vectorMultWithCarry c xs b (d `div` b))
+
 greater :: [Int] -> [Int] -> Bool
 greater [] [] = True
 greater (x:xs) (y:ys)

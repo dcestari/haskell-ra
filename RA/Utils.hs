@@ -23,7 +23,9 @@ showRA :: RealArbitrario -> String
 showRA (num) =
   let entera = showParteEntera num
       decimal = showDecimales num
-  in if decimal == "" then entera else entera ++ "." ++ decimal
+      e_str = if entera == "" then (if isNegative num then "-" else "") ++ "0" else entera
+      d_str = if decimal == "" then "" else "." ++ decimal
+  in e_str ++ d_str
 
 showParteEntera :: RealArbitrario -> String
 showParteEntera (NoNeg (x:xs) ys b) = (showParteEntera (NoNeg (trim xs) ys b)) ++ (show x)
@@ -38,3 +40,7 @@ showDecimales (Neg xs (y:ys) b)
   | otherwise = (show y) ++ decimales
   where decimales = showDecimales (Neg xs (rtrim ys) b)
 showDecimales (Neg xs [] b) = []
+
+isNegative :: RealArbitrario -> Bool
+isNegative (NoNeg _ _ _) = False
+isNegative (Neg _ _ _) = True
