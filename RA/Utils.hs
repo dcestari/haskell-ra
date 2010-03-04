@@ -20,27 +20,32 @@ toList x@(NoNeg xs ys b1) y@(NoNeg ws zs b2) =
     in (a, b, d)
 
 showRA :: RealArbitrario -> String
-showRA (num) =
-  let entera = showParteEntera num
-      decimal = showDecimales num
-      e_str = if entera == "" then (if isNegative num then "-" else "") ++ "0" else entera
+showRA num =
+  let r = trimRA num
+      entera = showParteEntera r
+      decimal = showDecimales r
+      e_str = if entera == "" then (if isNegative r then "-" else "") ++ "0" else entera
       d_str = if decimal == "" then "" else "." ++ decimal
   in e_str ++ d_str
 
 showParteEntera :: RealArbitrario -> String
-showParteEntera (NoNeg (x:xs) ys b) = (showParteEntera (NoNeg (trim xs) ys b)) ++ (show x)
+showParteEntera (NoNeg (x:xs) ys b) = (showParteEntera (NoNeg xs ys b)) ++ (show x)
 showParteEntera (NoNeg [] ys b) = []
-showParteEntera (Neg (x:xs) ys b) = "-" ++ (showParteEntera (NoNeg (trim xs) ys b)) ++ (show x)
+showParteEntera (Neg (x:xs) ys b) = "-" ++ (showParteEntera (NoNeg xs ys b)) ++ (show x)
 showParteEntera (Neg [] ys b) = []
 
 showDecimales :: RealArbitrario -> String
-showDecimales (NoNeg xs ys b) = showDecimales (Neg xs (rtrim ys) b)
+showDecimales (NoNeg xs ys b) = showDecimales (Neg xs ys b)
 showDecimales (Neg xs (y:ys) b)
   | y == 0 = if decimales == "" then "" else (show y) ++ decimales
   | otherwise = (show y) ++ decimales
-  where decimales = showDecimales (Neg xs (rtrim ys) b)
+  where decimales = showDecimales (Neg xs ys b)
 showDecimales (Neg xs [] b) = []
 
 isNegative :: RealArbitrario -> Bool
 isNegative (NoNeg _ _ _) = False
 isNegative (Neg _ _ _) = True
+
+trimRA :: RealArbitrario -> RealArbitrario
+trimRA (NoNeg xs ys b) = NoNeg (trim xs) (trim ys) b
+trimRA (Neg xs ys b) = Neg (trim xs) (trim ys) b
